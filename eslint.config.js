@@ -11,13 +11,41 @@ module.exports = [
       ".eslintrc.js",
       "node_modules/**",
       "dist/**",
+      "playwright-report/**",
+      "test-results/**",
+      "blob-report/**",
+      "playwright/.cache/**",
     ],
   },
   js.configs.recommended,
+
+  // Playwright config and E2E tests
+  {
+    files: ["playwright.config.js", "tests/**/*.js"],
+    languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "module",
+      globals: {
+        ...globals.node, // Allows process.env
+      },
+    },
+    rules: {
+      indent: ["error", 2],
+      "linebreak-style": ["error", "unix"],
+      quotes: ["error", "single"],
+      semi: ["error", "never"],
+      eqeqeq: "error",
+      "no-trailing-spaces": "error",
+      "object-curly-spacing": ["error", "always"],
+      "arrow-spacing": ["error", { before: true, after: true }],
+    },
+  },
+
+  // Express production server
   {
     files: ["app.js"],
     languageOptions: {
-      ecmaVersion: 2018,
+      ecmaVersion: "latest",
       sourceType: "commonjs",
       globals: {
         ...globals.node,
@@ -32,17 +60,19 @@ module.exports = [
       "no-trailing-spaces": "error",
       "object-curly-spacing": ["error", "always"],
       "arrow-spacing": ["error", { before: true, after: true }],
-      "no-console": 0,
+      "no-console": "off",
     },
   },
+
+  // React source, Jest unit tests, and Jest setup
   {
-    files: ["src/**/*.{js,jsx}", "test/**/*.{js,jsx}"],
+    files: ["src/**/*.{js,jsx}", "test/**/*.{js,jsx}", "jest.setup.js"],
     plugins: {
       react,
       jest,
     },
     languageOptions: {
-      ecmaVersion: 2018,
+      ecmaVersion: "latest",
       sourceType: "module",
       parserOptions: {
         ecmaFeatures: {
@@ -51,7 +81,6 @@ module.exports = [
       },
       globals: {
         ...globals.browser,
-        ...globals.es6,
         ...globals.jest,
       },
     },
@@ -71,7 +100,7 @@ module.exports = [
       "object-curly-spacing": ["error", "always"],
       "arrow-spacing": ["error", { before: true, after: true }],
       "no-console": "off",
-      "react/prop-types": 0,
+      "react/prop-types": "off",
     },
   },
 ];

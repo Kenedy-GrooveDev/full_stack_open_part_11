@@ -37,7 +37,8 @@
       "<rootDir>/jest.setup.js"
     ],
     "testPathIgnorePatterns": [
-      "e2e-tests"
+      "/node_modules/",
+      "/tests/"
     ]
   },
   "devDependencies": {
