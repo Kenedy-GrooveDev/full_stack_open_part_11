@@ -42,6 +42,7 @@ const PokemonPage = ({ previous, next }) => {
     color: 'brown',
     display: 'flex',
     alignItems: 'center',
+    gap: '2px',
   }
 
   const iconStyle = {
