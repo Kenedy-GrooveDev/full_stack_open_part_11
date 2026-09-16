@@ -51,7 +51,7 @@ const PokemonPage = ({ previous, next }) => {
 
   console.log('hiddenAbility=', hiddenAbility)
   return (
-    <>
+    <div className="pokemon-section">
       <div className="links">
         {previous && (
           <Link to={`/pokemon/${previous.name}`} style={navStyle}>
@@ -103,7 +103,7 @@ const PokemonPage = ({ previous, next }) => {
           </div>
         </div>
       </div>
-    </>
+    </div>
   )
 }
 
