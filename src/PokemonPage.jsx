@@ -4,6 +4,9 @@ import LoadingSpinner from './LoadingSpinner'
 import { useApi } from './useApi'
 import PokemonAbility from './PokemonAbility'
 import ErrorMessage from './ErrorMessage'
+import Prev from '../assets/icons8-go-back-64.png'
+import Home from '../assets/icons8-home-48.png'
+import Next from '../assets/icons8-forward-button-64.png'
 
 const formatName = (nameWithDash) => nameWithDash.replace('-', ' ')
 
@@ -34,13 +37,38 @@ const PokemonPage = ({ previous, next }) => {
     (ability) => ability.is_hidden === true,
   )
 
+  const navStyle = {
+    textDecoration: 'none',
+    color: 'brown',
+    display: 'flex',
+    alignItems: 'center',
+  }
+
+  const iconStyle = {
+    height: '30px',
+    width: '30px',
+  }
+
   console.log('hiddenAbility=', hiddenAbility)
   return (
     <>
       <div className="links">
-        {previous && <Link to={`/pokemon/${previous.name}`}>Previous</Link>}
-        <Link to="/">Home</Link>
-        {next && <Link to={`/pokemon/${next.name}`}>Next</Link>}
+        {previous && (
+          <Link to={`/pokemon/${previous.name}`} style={navStyle}>
+            <img src={Prev} style={iconStyle} />
+            Previous
+          </Link>
+        )}
+        <Link to="/" style={navStyle}>
+          <img src={Home} style={iconStyle} />
+          Home
+        </Link>
+        {next && (
+          <Link to={`/pokemon/${next.name}`} style={navStyle}>
+            <img src={Next} style={iconStyle} />
+            Next
+          </Link>
+        )}
       </div>
       <div className={`pokemon-page pokemon-type-${type.name}`}>
         <div
