@@ -39,7 +39,10 @@
     "testPathIgnorePatterns": [
       "/node_modules/",
       "/tests/"
-    ]
+    ],
+    "moduleNameMapper": {
+      "\\.(png|jpe?g|gif|svg|webp)$": "<rootDir>/test/__mocks__/fileMock.js"
+    }
   },
   "devDependencies": {
     "@babel/core": "^7.29.0",
