@@ -33,11 +33,11 @@ jobs:
           path: playwright-report/
           retention-days: 30
       - name: Trigger deployment
-        if: ${{ github.event_name == 'push' }}
+        if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ', '), '#skip') }}
         run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
   tag_release:
     needs: [simple_deployment_pipeline]
-    if: ${{github.event_name == 'push'}}
+    if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ', '), '#skip') }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
