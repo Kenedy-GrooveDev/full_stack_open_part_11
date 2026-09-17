@@ -37,7 +37,7 @@ jobs:
         run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
       - name: Notify Status
         uses: sarisia/actions-status-discord@v1
-        if: always()
+        if: success()
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           username: Fullstack part 11 Hook
