@@ -43,10 +43,6 @@ jobs:
           status: success
           title: "✅ Deployment Successful!"
           description: "A new version deployed to production"
-          content: |
-            **Commit:** ${{ github.sha }}
-            **Message:** ${{ github.event.head_commit.message }}
-            **Author:** ${{ github.actor }}
 
   tag_release:
     needs: [simple_deployment_pipeline]
