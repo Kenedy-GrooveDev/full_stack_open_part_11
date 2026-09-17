@@ -40,6 +40,7 @@ jobs:
         if: ${{success() && github.event_name == 'push'}}
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: ${{ job.status }}
           username: Fullstack part 11 Hook
 
   tag_release:
