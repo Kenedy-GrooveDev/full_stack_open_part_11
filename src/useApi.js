@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
-import kenedy from 'kenedy'
 
 const useApi = (url, mapResults = (result) => result) => {
   const [data, setData] = useState()

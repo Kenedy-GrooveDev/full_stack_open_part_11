@@ -40,17 +40,28 @@ jobs:
         if: ${{success() && github.event_name == 'push'}}
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          nodetail: true
           status: success
-          title: "✅ Deployment Successful!"
-          description: "A new version deployed to production"
+          content: |
+            *✅ Deployment Successful!* A new version deployed to production
+          description: |
+            ```ini
+            [Deployment Details]
+            ```
+            **Commit:** ${{ github.sha }}
+            **Message:** ${{ github.event.head_commit.message }}
+            **Author:** ${{ github.actor }}
       - name: Notify Discord Failure
         uses: sarisia/actions-status-discord@v1
-        if: ${{success() && github.event_name == 'push'}}
+        if: failure() || github.event_name == 'push'
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          nodetail: true
           status: failure
           title: "❌ Build Failed!"
-          description: "The pipeline encounteredan error"
+          description: |
+            The pipeline encounteredan error
+
 
   tag_release:
     needs: [simple_deployment_pipeline]
