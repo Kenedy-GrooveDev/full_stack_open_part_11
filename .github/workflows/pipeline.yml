@@ -35,81 +35,33 @@ jobs:
       - name: Trigger deployment
         if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ', '), '#skip') }}
         run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
-      - name: Notify Discord - Failure
+      - name: Notify Discord Success
+        uses: sarisia/actions-status-discord@v1
         if: ${{success() && github.event_name == 'push'}}
-        uses: Ilshidur/action-discord@master
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         with:
-          args: |
-            {
-              "embeds": [{
-                "title": "❌ Build Failed!",
-                "description": "The pipeline encountered an error",
-                "color": 15158332,
-                "fields": [
-                  {
-                    "name": "Repository",
-                    "value": "${{ github.repository }}"
-                  },
-                  {
-                    "name": "Branch",
-                    "value": "${{ github.ref_name }}"
-                  },
-                  {
-                    "name": "Commit",
-                    "value": "${{ github.sha }}"
-                  },
-                  {
-                    "name": "Message",
-                    "value": "${{ github.event.head_commit.message }}"
-                  },
-                  {
-                    "name": "Author",
-                    "value": "${{ github.event.head_commit.author.name }}"
-                  },
-                  {
-                    "name": "Workflow",
-                    "value": "${{ github.workflow }}"
-                  },
-                  {
-                    "name": "Job",
-                    "value": "${{ github.job }}"
-                  }
-                ]
-              }]
-            }
-      - name: Notify Discord - Success
-        if: ${{success() && github.event_name == 'push'}}
-        uses: Ilshidur/action-discord@master
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          nodetail: true
+          status: success
+          content: |
+            *✅ Deployment Successful!* A new version deployed to production
+          description: |
+            ```ini
+            [Deployment Details]
+            ```
+            **Commit:** ${{ github.sha }}
+            **Message:** ${{ github.event.head_commit.message }}
+            **Author:** ${{ github.actor }}
+      - name: Notify Discord Failure
+        uses: sarisia/actions-status-discord@v1
+        if: failure() || github.event_name == 'push'
         with:
-          args: |
-            {
-              "embeds": [{
-                "title": "✅ Deployment Successful!",
-                "description": "A new version was deployed to production",
-                "color": 3066993,
-                "fields": [
-                  {
-                    "name": "Commit",
-                    "value": "${{ github.sha }}",
-                    "inline": false
-                  },
-                  {
-                    "name": "Message",
-                    "value": "${{ github.event.head_commit.message }}",
-                    "inline": false
-                  },
-                  {
-                    "name": "Author",
-                    "value": "${{ github.event.head_commit.author.name }}",
-                    "inline": false
-                  }
-                ]
-              }]
-            }
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          nodetail: true
+          status: failure
+          title: "❌ Build Failed!"
+          description: |
+            The pipeline encounteredan error
+
 
   tag_release:
     needs: [simple_deployment_pipeline]
