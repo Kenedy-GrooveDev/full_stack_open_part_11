@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
@@ -49,6 +51,18 @@ jobs:
             **Commit:** ${{ github.sha }}
             **Message:** ${{ github.event.head_commit.message }}
             **Author:** ${{ github.actor }}
+
+      - name: Fetch Commit Message
+        if: always()
+        id: git_info
+        run: |
+          # 1. Determine if we are on a PR or a direct Push event
+          TARGET_SHA="${{ github.event.pull_request.head.sha || github.sha }}"
+
+          # 2. Extract the clean, real developer log using that precise SHA
+          MSG=$(git log -1 --pretty=format:"%s" $TARGET_SHA)
+          echo "commit_msg=$MSG" >> $GITHUB_OUTPUT
+
       - name: Notify Discord Failure
         uses: sarisia/actions-status-discord@v1
         if: failure()
@@ -56,9 +70,20 @@ jobs:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           nodetail: true
           status: failure
-          title: "❌ Build Failed!"
+          content: |
+            **❌ Build Failed!** The pipeline encountered an error
+          title: "Failure Details"
           description: |
-            The pipeline encountered an error
+            **Repository:** ${{ github.repository }}
+            **Branch:** ${{ github.ref_name }}
+            **Commit:** ${{ github.sha }}
+            **Message:** ${{ github.event.head_commit.message || steps.git_info.outputs.commit_msg }}
+            **Author:** ${{ github.actor }}
+            **Workflow:** ${{ github.workflow }}
+            **Job:** deployment_pipeline
+
+            [View Commit](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
+            [View Workflow Run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
 
   tag_release:
