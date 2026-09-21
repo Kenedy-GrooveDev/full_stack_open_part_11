@@ -53,50 +53,51 @@ jobs:
       - name: Trigger deployment
         run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
 
-    notify_failure:
-      needs: [build_and_test, deploy]
-      if: >-
-        ${{
-          always() &&
-          github.event_name == 'push' &&
-          (
-            needs.build_and_test.result == 'failure' ||
-            needs.deploy.result == 'failure'
-          )
-        }}
-      runs-on: ubuntu-latest
+  notify_failure:
+    needs: [build_and_test, deploy]
+    if: >-
+      ${{
+        always() &&
+        github.event_name == 'push' &&
+        (
+          needs.build_and_test.result == 'failure' ||
+          needs.deploy.result == 'failure'
+        )
+      }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
-      steps:
-        - uses: actions/checkout@v6
-          with:
-            fetch-depth: 0
+      - name: Fetch Commit Message
+        id: git_info
+        run: |
+          TARGET_SHA="${{ github.event.pull_request.head.sha || github.sha }}"
+          MSG=$(git log -1 --pretty=format:"%s" "$TARGET_SHA")
+          echo "commit_msg=$MSG" >> "$GITHUB_OUTPUT"
 
-        - name: Fetch Commit Message
-          id: git_info
-          run: |
-            MSG=$(git log -1 --pretty=format:"%s" "${{ github.sha }}")
-            echo "commit_msg=$MSG" >> "$GITHUB_OUTPUT"
+      - name: Notify Discord Failure
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          nodetail: true
+          status: failure
+          content: |
+            **❌ Build Failed!** The pipeline encountered an error
+          title: "Failure Details"
+          description: |
+            **Repository:** ${{ github.repository }}
+            **Branch:** ${{ github.ref_name }}
+            **Commit:** ${{ github.sha }}
+            **Message:** ${{ github.event.head_commit.message || steps.git_info.outputs.commit_msg }}
+            **Author:** ${{ github.actor }}
+            **Workflow:** ${{ github.workflow }}
+            **Job:** deployment_pipeline
 
-        - name: Notify Discord Failure
-          uses: sarisia/actions-status-discord@v1
-          with:
-            webhook: ${{ secrets.DISCORD_WEBHOOK }}
-            nodetail: true
-            status: failure
-            content: |
-              **❌ Build Failed!** The pipeline encountered an error
-            title: "Failure Details"
-            description: |
-              **Repository:** ${{ github.repository }}
-              **Branch:** ${{ github.ref_name }}
-              **Commit:** ${{ github.sha }}
-              **Message:** ${{ github.event.head_commit.message || steps.git_info.outputs.commit_msg }}
-              **Author:** ${{ github.actor }}
-              **Workflow:** ${{ github.workflow }}
-              **Job:** deployment_pipeline
+            [View Commit](<${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}>)
+            [View Workflow Run](<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}>)
 
-              [View Commit](<${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}>)
-              [View Workflow Run](<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}>)
   notify_success:
     needs: [deploy]
     runs-on: ubuntu-latest
