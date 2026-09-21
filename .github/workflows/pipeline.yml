@@ -43,10 +43,10 @@ jobs:
           nodetail: true
           status: success
           content: |
-            *✅ Deployment Successful!* A new version deployed to production
+            **✅ Deployment Successful!** A new version deployed to production
           description: |
-            ```ini
-            [Deployment Details]
+            ```md
+            # Deployment Details
             ```
             **Commit:** ${{ github.sha }}
             **Message:** ${{ github.event.head_commit.message }}
@@ -60,7 +60,7 @@ jobs:
           status: failure
           title: "❌ Build Failed!"
           description: |
-            The pipeline encounteredan error
+            The pipeline encountered an error
 
 
   tag_release:
