@@ -5,6 +5,7 @@ import LoadingSpinner from './LoadingSpinner'
 import ErrorMessage from './ErrorMessage'
 import PokemonPage from './PokemonPage'
 import PokemonList from './PokemonList'
+import Kenedy form 'Kenedy'
 
 const mapResults = ({ results }) =>
   results.map(({ url, name }) => ({
