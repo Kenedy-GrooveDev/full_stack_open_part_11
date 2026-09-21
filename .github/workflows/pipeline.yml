@@ -49,6 +49,15 @@ jobs:
             **Commit:** ${{ github.sha }}
             **Message:** ${{ github.event.head_commit.message }}
             **Author:** ${{ github.actor }}
+
+      - name: Fetch Commit Message
+        if: always()
+        id: git_info
+        # This fallback pulls from git logs if the native github context is blank
+        run: |
+          MSG=$(git log -1 --pretty=format:"%s")
+          echo "commit_msg=$MSG" >> $GITHUB_OUTPUT
+
       - name: Notify Discord Failure
         uses: sarisia/actions-status-discord@v1
         if: failure()
@@ -56,12 +65,14 @@ jobs:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           nodetail: true
           status: failure
+          content: |
+            **❌ Build Failed!** The pipeline encountered an error
           title: "Failure Details"
           description: |
             **Repository:** ${{ github.repository }}
             **Branch:** ${{ github.ref_name }}
             **Commit:** ${{ github.sha }}
-            **Message:** ${{ github.event.head_commit.message }}
+            **Message:** ${{ github.event.head_commit.message || steps.git_info.outputs.commit_msg }}
             **Author:** ${{ github.actor }}
             **Workflow:** ${{ github.workflow }}
             **Job:** deployment_pipeline
