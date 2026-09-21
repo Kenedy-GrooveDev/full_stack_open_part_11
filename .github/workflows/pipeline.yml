@@ -45,7 +45,7 @@ jobs:
         run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
 
   notify_failure:
-    needs: [deploy]
+    needs: [build_and_test, deploy]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
