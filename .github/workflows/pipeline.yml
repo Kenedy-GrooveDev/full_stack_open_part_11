@@ -53,9 +53,12 @@ jobs:
       - name: Fetch Commit Message
         if: always()
         id: git_info
-        # This fallback pulls from git logs if the native github context is blank
         run: |
-          MSG=$(git log -1 --pretty=format:"%s")
+          # 1. Determine if we are on a PR or a direct Push event
+          TARGET_SHA="${{ github.event.pull_request.head.sha || github.sha }}"
+
+          # 2. Extract the clean, real developer log using that precise SHA
+          MSG=$(git log -1 --pretty=format:"%s" $TARGET_SHA)
           echo "commit_msg=$MSG" >> $GITHUB_OUTPUT
 
       - name: Notify Discord Failure
