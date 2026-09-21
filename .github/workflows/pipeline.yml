@@ -53,7 +53,7 @@ jobs:
             **Author:** ${{ github.actor }}
       - name: Notify Discord Failure
         uses: sarisia/actions-status-discord@v1
-        if: failure() || github.event_name == 'push'
+        if: failure()
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           nodetail: true
