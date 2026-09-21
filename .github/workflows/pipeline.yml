@@ -58,8 +58,15 @@ jobs:
       - run: npx playwright install --with-deps
       - run: npx playwright test
 
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
   deploy:
-    needs: [build_and_test]
+    needs: [lint, unit_tests, build, playwright]
     if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ', '), '#skip') }}
     runs-on: ubuntu-latest
     steps:
@@ -69,13 +76,16 @@ jobs:
         run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
 
   notify_failure:
-    needs: [build_and_test, deploy]
+    needs: [lint, unit_tests, build, playwright, deploy]
     if: >-
       ${{
         always() &&
         github.event_name == 'push' &&
         (
-          needs.build_and_test.result == 'failure' ||
+          needs.lint.result == 'failure' ||
+          needs.unit_tests.result == 'failure' ||
+          needs.build.result == 'failure' ||
+          needs.playwright.result == 'failure' ||
           needs.deploy.result == 'failure'
         )
       }}
@@ -88,8 +98,7 @@ jobs:
       - name: Fetch Commit Message
         id: git_info
         run: |
-          TARGET_SHA="${{ github.event.pull_request.head.sha || github.sha }}"
-          MSG=$(git log -1 --pretty=format:"%s" "$TARGET_SHA")
+          MSG=$(git log -1 --pretty=format:"%s" "${{ github.sha }}")
           echo "commit_msg=$MSG" >> "$GITHUB_OUTPUT"
 
       - name: Notify Discord Failure
