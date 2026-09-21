@@ -9,7 +9,7 @@ on:
     types: [opened, synchronize]
 
 jobs:
-  simple_deployment_pipeline:
+  build_and_test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -34,24 +34,23 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
+
+  deploy:
+    needs: [build_and_test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
       - name: Trigger deployment
         if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ', '), '#skip') }}
         run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
-      - name: Notify Discord Success
-        uses: sarisia/actions-status-discord@v1
-        if: ${{success() && github.event_name == 'push'}}
-        with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          nodetail: true
-          status: success
-          content: |
-            **✅ Deployment Successful!** A new version deployed to production
-          title: "Deployment Details"
-          description: |
-            **Commit:** ${{ github.sha }}
-            **Message:** ${{ github.event.head_commit.message }}
-            **Author:** ${{ github.actor }}
 
+  notify_failure:
+    needs: [deploy]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       - name: Fetch Commit Message
         if: always()
         id: git_info
@@ -65,7 +64,7 @@ jobs:
 
       - name: Notify Discord Failure
         uses: sarisia/actions-status-discord@v1
-        if: failure()
+        if: ${{failure() && github.event_name == 'push'}}
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           nodetail: true
@@ -85,9 +84,28 @@ jobs:
             [View Commit](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
             [View Workflow Run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
+  notify_success:
+    needs: [deploy]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: sarisia/actions-status-discord@v1
+      - name: Notify Discord Success
+        if: ${{success() && github.event_name == 'push'}}
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          nodetail: true
+          status: success
+          content: |
+            **✅ Deployment Successful!** A new version deployed to production
+          title: "Deployment Details"
+          description: |
+            **Commit:** ${{ github.sha }}
+            **Message:** ${{ github.event.head_commit.message }}
+            **Author:** ${{ github.actor }}
 
   tag_release:
-    needs: [simple_deployment_pipeline]
+    needs: [deploy]
     if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ', '), '#skip') }}
     runs-on: ubuntu-latest
     permissions:
