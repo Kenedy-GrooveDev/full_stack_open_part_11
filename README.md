@@ -11,3 +11,13 @@ Start by running `npm install` inside the project folder
 `npm run eslint` to run eslint
 `npm run build` to make a production build
 `npm run start-prod` to run your production build
+
+## Deployed version of your pokedex
+
+https://full-stack-open-part-11-sk1d.onrender.com/
+
+## Exercises 21 and 22 Repository
+
+https://github.com/Kenedy-GrooveDev/blog_appliction
+
+
